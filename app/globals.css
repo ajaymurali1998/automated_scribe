@@ -1,0 +1,220 @@
+@import "tailwindcss";
+
+/* Design tokens, ported from cold-emailer-web/app/globals.css so RxVoice and the
+   cold-email app read as the same family. Dark-only — there is no light theme and
+   no toggle.
+
+   Accent discipline (inherited from the sibling): #4F5BFF appears ONLY on primary
+   buttons, links, focus rings, and the logo mark. Nowhere else. Everything else is
+   carried by the panel/line/ink greys, which is what keeps a dense clinical form
+   from looking like a toy. */
+@theme {
+  --color-bg: #0b0b10;
+  --color-panel: #12121a;
+  --color-panel-2: #181822;
+
+  --color-ink: #f4f3ef;
+  --color-ink-soft: #9c9aa4;
+
+  --color-line: rgba(255, 255, 255, 0.09);
+  --color-line-strong: rgba(255, 255, 255, 0.16);
+
+  --color-accent: #4f5bff;
+  --color-accent-ink: #8f97ff;
+
+  /* Semantic, not decorative: moss = confirmed/safe, warn = needs the doctor's
+     eyes (review_flag), danger = destructive or failed. */
+  --color-moss: #8fd16a;
+  --color-warn: #e6b84d;
+  --color-danger: #ff6f6f;
+
+  --radius-panel: 14px;
+
+  --font-head: var(--font-fraunces), Georgia, serif;
+  --font-sans: var(--font-geist-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, "SF Mono", Menlo, monospace;
+}
+
+html {
+  background: var(--color-bg);
+  color-scheme: dark;
+}
+
+body {
+  background: var(--color-bg);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+}
+
+/* ---------------------------------------------------------------------------
+   A small set of component classes for the primitives that repeat across every
+   screen. Tailwind utilities handle layout and one-offs; these exist so a button
+   or an input can't drift between components — which matters more than usual when
+   the form is a prescription.
+   --------------------------------------------------------------------------- */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  padding: 0.75rem 1.25rem;
+  font-size: 14.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, box-shadow 0.15s, opacity 0.15s;
+}
+.btn:active {
+  transform: translateY(1px);
+}
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: #fff;
+}
+.btn-primary:hover:not(:disabled) {
+  box-shadow: 0 6px 30px -6px rgba(79, 91, 255, 0.35);
+}
+
+.btn-ghost {
+  background: transparent;
+  border-color: var(--color-line);
+  color: var(--color-ink-soft);
+}
+.btn-ghost:hover:not(:disabled) {
+  border-color: var(--color-line-strong);
+  color: var(--color-ink);
+}
+
+.btn-danger {
+  background: transparent;
+  border-color: rgba(255, 111, 111, 0.35);
+  color: var(--color-danger);
+}
+.btn-danger:hover:not(:disabled) {
+  border-color: var(--color-danger);
+}
+
+.btn-sm {
+  padding: 0.5rem 0.875rem;
+  font-size: 13px;
+  border-radius: 9px;
+}
+
+.panel {
+  background: var(--color-panel);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-panel);
+}
+
+/* Inputs are deliberately high-contrast against the panel. A doctor scanning a
+   prescription for a wrong dose should never have to hunt for the field edge. */
+.input {
+  width: 100%;
+  background: var(--color-panel-2);
+  border: 1px solid var(--color-line);
+  border-radius: 9px;
+  padding: 0.625rem 0.75rem;
+  font-size: 14px;
+  color: var(--color-ink);
+}
+.input::placeholder {
+  color: color-mix(in srgb, var(--color-ink-soft) 65%, transparent);
+}
+.input:focus {
+  outline: none;
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px rgba(79, 91, 255, 0.35);
+}
+
+.label {
+  display: block;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--color-ink-soft);
+  margin-bottom: 0.375rem;
+}
+
+.section-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--color-ink-soft);
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  border-radius: 999px;
+  padding: 0.2rem 0.55rem;
+  font-size: 11.5px;
+  font-weight: 600;
+  border: 1px solid transparent;
+}
+.badge-warn {
+  background: rgba(230, 184, 77, 0.12);
+  border-color: rgba(230, 184, 77, 0.4);
+  color: var(--color-warn);
+}
+.badge-moss {
+  background: rgba(143, 209, 106, 0.12);
+  border-color: rgba(143, 209, 106, 0.4);
+  color: var(--color-moss);
+}
+
+.error-note {
+  background: rgba(255, 111, 111, 0.1);
+  border: 1px solid rgba(255, 111, 111, 0.3);
+  border-radius: 9px;
+  padding: 0.625rem 0.75rem;
+  font-size: 13.5px;
+  color: var(--color-danger);
+}
+
+.spinner {
+  width: 15px;
+  height: 15px;
+  border: 2px solid var(--color-line-strong);
+  border-top-color: var(--color-ink);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* The live recording dot. Pulsing is the one piece of motion that carries real
+   information here — it tells the doctor the mic is actually open. */
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .rec-dot {
+    animation: pulse 1.4s ease-in-out infinite;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spinner {
+    animation-duration: 2s;
+  }
+}
