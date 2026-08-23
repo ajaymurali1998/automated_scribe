@@ -35,7 +35,6 @@ const styles = StyleSheet.create({
   cDur: { width: "24%" },
 
   drugName: { fontWeight: 700 },
-  flag: { color: "#92400e", fontSize: 8.5, marginTop: 2 },
 
   invRow: { flexDirection: "row", paddingVertical: 3 },
   invNum: { width: 16 },
@@ -154,9 +153,6 @@ export default function PrescriptionPDF({ rx, doctor, signatureUrl }: Props) {
                     {m.name}
                   </Text>
                   {m.instructions ? <Text style={styles.muted}>{m.instructions}</Text> : null}
-                  {/* A flag surviving to print means the doctor chose to print it as-is.
-                      Carry it onto the page rather than hiding it. */}
-                  {m.review_flag ? <Text style={styles.flag}>⚠ {m.review_flag}</Text> : null}
                 </View>
                 <Text style={styles.cDose}>{m.strength ?? ""}</Text>
                 <View style={styles.cFreq}>
@@ -184,7 +180,6 @@ export default function PrescriptionPDF({ rx, doctor, signatureUrl }: Props) {
                     {inv.type ? <Text style={styles.muted}> ({TYPE_LABEL[inv.type] ?? inv.type})</Text> : null}
                   </Text>
                   {inv.instructions ? <Text style={styles.muted}>{inv.instructions}</Text> : null}
-                  {inv.review_flag ? <Text style={styles.flag}>⚠ {inv.review_flag}</Text> : null}
                 </View>
               </View>
             ))}
