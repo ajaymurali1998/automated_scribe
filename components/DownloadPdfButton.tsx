@@ -16,6 +16,10 @@ type Props = {
   doctor: DoctorProfile | null;
   className?: string;
   label?: string;
+  /** Called synchronously before PDF generation starts — Workspace uses this to save
+   *  to history, since downloading is itself a strong signal the doctor is done with
+   *  this patient and the record shouldn't be lost just because Save wasn't clicked. */
+  onBeforeDownload?: () => void;
 };
 
 function fileName(rx: StructuredRx): string {
@@ -23,7 +27,7 @@ function fileName(rx: StructuredRx): string {
   return `rx-${who}-${rx.date}.pdf`;
 }
 
-export default function DownloadPdfButton({ rx, doctor, className, label = "Download PDF" }: Props) {
+export default function DownloadPdfButton({ rx, doctor, className, label = "Download PDF", onBeforeDownload }: Props) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -31,6 +35,9 @@ export default function DownloadPdfButton({ rx, doctor, className, label = "Down
 
   async function download() {
     if (!doctor) return;
+    // Runs first, synchronously — the save must happen even if PDF generation
+    // itself fails below.
+    onBeforeDownload?.();
     setBusy(true);
     setError(null);
 
