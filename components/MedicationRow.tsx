@@ -1,5 +1,6 @@
 "use client";
 
+import CorrectionDiff from "@/components/CorrectionDiff";
 import type { Medication } from "@/types/prescription";
 
 type Props = {
@@ -26,6 +27,19 @@ export default function MedicationRow({ index, med, onChange, onRemove }: Props)
           {/* Makes the provenance of this row unmistakable: the doctor never dictated
               it this visit, it was pulled from the previous prescription. */}
           {med.carried_forward && <span className="badge badge-moss">From previous visit</span>}
+          {/* A crisp 2-4 word pill, not a paragraph — the model is instructed to keep
+              review_flag short at the source, so there's no truncation logic here.
+              Clicking it dismisses, same as before, just far less visually heavy. */}
+          {flagged && (
+            <button
+              onClick={() => onChange(index, { review_flag: "" })}
+              className="badge badge-warn"
+              title="Click to mark as checked"
+            >
+              {med.review_flag}
+              <span aria-hidden>×</span>
+            </button>
+          )}
         </div>
         <button
           onClick={() => onRemove(index)}
@@ -36,21 +50,7 @@ export default function MedicationRow({ index, med, onChange, onRemove }: Props)
         </button>
       </div>
 
-      {/* The flag sits above the fields, not tucked away — it's the one thing on this
-          row the doctor must not miss. It clears itself once acknowledged. */}
-      {flagged && (
-        <div className="mb-3 rounded-lg border border-warn/40 bg-warn/10 px-3 py-2.5">
-          <p className="text-warn text-[13px] leading-relaxed">
-            <strong className="font-semibold">Needs your check:</strong> {med.review_flag}
-          </p>
-          <button
-            onClick={() => onChange(index, { review_flag: "" })}
-            className="text-xs text-warn/80 hover:text-warn underline mt-1.5"
-          >
-            I&apos;ve checked this
-          </button>
-        </div>
-      )}
+      <CorrectionDiff heardAs={med.heard_as} correctedTo={med.name} />
 
       <div className="grid grid-cols-2 gap-3">
         <div className="col-span-2 sm:col-span-1">
