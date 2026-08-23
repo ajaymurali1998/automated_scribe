@@ -21,6 +21,9 @@ type Props = {
   onStart: () => void;
   starting: boolean;
   error: string | null;
+  /** False until name/clinic/registration number are set in Account — PDF download is
+   *  gated on this too, but the doctor should learn it here, not after dictating. */
+  profileComplete: boolean;
 };
 
 // v1 has one template. The dropdown exists because the shape of the app is
@@ -41,11 +44,27 @@ export default function NewRecording({
   onStart,
   starting,
   error,
+  profileComplete,
 }: Props) {
   return (
     <div className="max-w-[640px]">
       <h1 className="font-head text-3xl mb-1.5">New prescription</h1>
       <p className="text-ink-soft mb-7">Dictate naturally. You'll review and edit everything before it prints.</p>
+
+      {/* The first thing anyone sees on this app. Printing is gated on this same
+          check (see DownloadPdfButton), but learning that after dictating a whole
+          prescription is a bad surprise — say it up front instead. */}
+      {!profileComplete && (
+        <div className="rounded-xl border border-warn/40 bg-warn/10 px-4 py-3 mb-5">
+          <p className="text-warn text-sm leading-relaxed">
+            Add your name, clinic and registration number in{" "}
+            <a href="/account" className="underline font-medium">
+              Account
+            </a>{" "}
+            before you can print a prescription. You can still record and review first.
+          </p>
+        </div>
+      )}
 
       <div className="panel p-6 mb-5">
         <div className="mb-4">
