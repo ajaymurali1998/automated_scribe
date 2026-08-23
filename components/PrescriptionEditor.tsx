@@ -11,7 +11,6 @@ import {
   emptyCarePlanItem,
   emptyInvestigation,
   emptyMedication,
-  pendingFlagCount,
   type CarePlanItem,
   type DoctorProfile,
   type Investigation,
@@ -47,8 +46,6 @@ export default function PrescriptionEditor({
   dirty,
 }: Props) {
   const [confirmRegen, setConfirmRegen] = useState(false);
-
-  const pending = pendingFlagCount(rx);
 
   function patch(next: Partial<StructuredRx>) {
     onChange({ ...rx, ...next });
@@ -93,16 +90,7 @@ export default function PrescriptionEditor({
         </p>
       </div>
 
-      {pending > 0 && (
-        <div className="rounded-xl border border-warn/40 bg-warn/10 px-4 py-3 mb-5">
-          <p className="text-warn text-sm leading-relaxed">
-            {pending === 1 ? "1 item needs" : `${pending} items need`} your attention — see the highlighted sections
-            below.
-          </p>
-        </div>
-      )}
-
-      {/* Informational, not actionable — unlike the flags above, there's nothing to
+      {/* Informational, not actionable — there's nothing to
           fix on THIS record. It's a note for next time (move somewhere quieter,
           stand closer to the mic), so it gets a quieter treatment than a review flag. */}
       {rx.noisy_environment_detected && (
@@ -114,34 +102,6 @@ export default function PrescriptionEditor({
         </div>
       )}
 
-      {/* --- Unclear segments ---
-          Given the same weight as a review flag, and placed before the form. These are
-          passages the model would not guess at; only the doctor knows what was said.
-          Note this section never appears on the printed PDF. */}
-      {rx.unclear_segments.length > 0 && (
-        <section className="rounded-xl border border-warn/40 bg-warn/[0.06] p-5 mb-4">
-          <p className="section-label !text-warn mb-2">Unclear in the dictation</p>
-          <p className="text-[13px] text-ink-soft mb-3 leading-relaxed">
-            These parts couldn&apos;t be interpreted confidently. Check them against what you said — speech in a
-            language other than English is not transcribed at all, so something may be missing.
-          </p>
-          <ul className="flex flex-col gap-2">
-            {rx.unclear_segments.map((seg, i) => (
-              <li key={i} className="flex items-start gap-2.5">
-                <span className="font-mono text-[13px] text-warn/90 flex-1 leading-relaxed">&ldquo;{seg}&rdquo;</span>
-                <button
-                  onClick={() =>
-                    patch({ unclear_segments: rx.unclear_segments.filter((_, j) => j !== i) })
-                  }
-                  className="text-xs text-warn/80 hover:text-warn underline shrink-0 mt-0.5"
-                >
-                  Resolved
-                </button>
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
 
       {/* --- Patient --- */}
       <section className="panel p-6 mb-4">
@@ -391,7 +351,7 @@ export default function PrescriptionEditor({
           </button>
         )}
 
-        <DownloadPdfButton rx={rx} doctor={doctor} className="min-w-[200px]" />
+        <DownloadPdfButton rx={rx} doctor={doctor} className="min-w-[200px]" onBeforeDownload={onSave} />
       </div>
     </div>
   );
