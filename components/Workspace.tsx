@@ -23,7 +23,7 @@ import {
   type LocalProfile,
   type StoredPrescription,
 } from "@/lib/localStore";
-import type { DoctorProfile, StructuredRx } from "@/types/prescription";
+import { isProfileComplete, type DoctorProfile, type StructuredRx } from "@/types/prescription";
 
 type Stage = "new" | "recording" | "review";
 
@@ -66,6 +66,10 @@ export default function Workspace() {
 
   const [profile, setProfile] = useState<LocalProfile | null>(null);
   const [history, setHistory] = useState<StoredPrescription[]>([]);
+
+  // Mobile-only — the sidebar is an off-canvas drawer below the lg breakpoint and
+  // always visible above it (see Sidebar.tsx's lg: overrides).
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // Loaded in an effect, not useState(loadProfile()), so this renders identically on
   // the server and on first client paint — reading localStorage during render would
@@ -200,14 +204,33 @@ export default function Workspace() {
   }
 
   const doctor = profile ? toDoctorProfile(profile) : null;
+  const profileComplete = isProfileComplete(doctor);
 
   return (
-    <div className="grid grid-cols-[minmax(0,280px)_minmax(0,1fr)] max-lg:grid-cols-1">
+    <div className="lg:grid lg:grid-cols-[minmax(0,280px)_minmax(0,1fr)]">
+      {/* Mobile-only top bar. The sidebar itself is `lg:static` (see Sidebar.tsx), so
+          above lg this whole bar is hidden and the original desktop layout is
+          untouched. */}
+      <div className="lg:hidden sticky top-0 z-20 flex items-center gap-3 border-b border-line bg-panel px-4 py-3">
+        <button
+          onClick={() => setSidebarOpen(true)}
+          className="text-ink-soft hover:text-ink p-1 -ml-1"
+          aria-label="Open menu"
+        >
+          <MenuIcon />
+        </button>
+        <span className="w-[18px] h-[18px] rounded-md bg-accent shadow-[0_0_16px_-2px_rgba(79,91,255,0.6)]" />
+        <span className="font-head text-base">RxVoice</span>
+      </div>
+
       <Sidebar
         prescriptions={history}
         activeId={savedId}
         onNewScribe={newScribe}
         onOpenPrescription={openPrescription}
+        profileComplete={profileComplete}
+        open={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
       />
 
       <main className="px-8 py-10 max-sm:px-5">
@@ -225,6 +248,7 @@ export default function Workspace() {
             onStart={startRecording}
             starting={dictation.status === "connecting"}
             error={dictation.error}
+            profileComplete={profileComplete}
           />
         )}
 
@@ -238,6 +262,7 @@ export default function Workspace() {
             onPause={dictation.pause}
             onResume={dictation.resume}
             onEnd={endRecording}
+            onStartOver={newScribe}
             ending={structuring}
           />
         )}
@@ -308,5 +333,13 @@ export default function Workspace() {
         )}
       </main>
     </div>
+  );
+}
+
+function MenuIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+      <path d="M3 6h18M3 12h18M3 18h18" strokeLinecap="round" />
+    </svg>
   );
 }
