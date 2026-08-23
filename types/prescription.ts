@@ -27,6 +27,11 @@ export const MedicationSchema = z.object({
     .describe(
       "Drug name as an Indian doctor would write it — brand name if the doctor said a brand (Dolo, Pan-D, Telma), generic otherwise. Correct obvious speech-recognition damage."
     ),
+  heard_as: z
+    .string()
+    .describe(
+      'What the doctor\'s speech literally sounded like BEFORE correction, e.g. "met for men", "acithral" -- ONLY when you corrected a real speech-recognition error in the name. Empty string when the name was already clear and needed no correction. Never fill this from dose/frequency confusion, only from the name itself being misheard.'
+    ),
   strength: z.string().describe('Dose strength with unit, e.g. "500mg", "10ml", "40 units". Empty string if not stated.'),
   form: z
     .string()
@@ -45,7 +50,7 @@ export const MedicationSchema = z.object({
   review_flag: z
     .string()
     .describe(
-      "Set to a short explanation ONLY when this item is ambiguous, incomplete, conflicting, or clinically unusual for this patient and specialty, and the doctor must check it. Empty string when clear. Never guess a value in order to avoid setting this."
+      "A CRISP 2-4 word label ONLY when this item is ambiguous, incomplete, conflicting, or clinically unusual for this patient and specialty, and the doctor must check it -- e.g. \"Dose not stated\", \"Verify with age\", \"Check pregnancy safety\", \"Conflicting frequency\". NOT a sentence or explanation. Empty string when clear. Never guess a value in order to avoid setting this."
     ),
 });
 
@@ -54,6 +59,11 @@ export type InvestigationType = (typeof INVESTIGATION_TYPES)[number];
 
 export const InvestigationSchema = z.object({
   name: z.string().describe('The test or procedure as ordered, e.g. "CBC", "HbA1c", "Lipid profile", "X-ray left knee", "ECHO".'),
+  heard_as: z
+    .string()
+    .describe(
+      'What the doctor\'s speech literally sounded like BEFORE correction -- ONLY when you corrected a real speech-recognition error in the test/procedure name. Empty string when the name was already clear.'
+    ),
   // Deliberately z.string(), NOT z.enum. The Anthropic SDK's zodOutputFormat runs its
   // own transformJSONSchema, which DROPS the enum constraint and appends the values to
   // the description as a text hint instead. So generation is not actually constrained
@@ -67,7 +77,11 @@ export const InvestigationSchema = z.object({
       'Exactly one of: "lab" for blood/urine/serology work, "imaging" for X-ray/USG/ECHO/MRI/CT/ECG, "procedure" for something done to the patient such as a dressing change or suture removal.'
     ),
   instructions: z.string().describe('e.g. "fasting", "with reports at follow-up". Empty string if none given.'),
-  review_flag: z.string().describe("Set only if what was ordered is ambiguous or needs the doctor's confirmation."),
+  review_flag: z
+    .string()
+    .describe(
+      'A CRISP 2-4 word label ONLY if what was ordered is ambiguous or needs the doctor\'s confirmation -- e.g. "Which side?", "Confirm test panel". NOT a sentence. Empty string when clear.'
+    ),
 });
 
 // Maps whatever the model returned onto one of the three known types. Falls back to
@@ -198,6 +212,7 @@ export function isProfileComplete(d: DoctorProfile | null): boolean {
 export function emptyMedication(): Medication {
   return {
     name: "",
+    heard_as: "",
     strength: "",
     form: "Tablet",
     frequency: "",
@@ -210,7 +225,7 @@ export function emptyMedication(): Medication {
 }
 
 export function emptyInvestigation(): Investigation {
-  return { name: "", type: "lab", instructions: "", review_flag: "" };
+  return { name: "", heard_as: "", type: "lab", instructions: "", review_flag: "" };
 }
 
 export function emptyCarePlanItem(): CarePlanItem {
