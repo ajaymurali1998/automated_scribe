@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import type { DictationStatus } from "@/lib/useDictation";
 
@@ -13,6 +13,7 @@ type Props = {
   onPause: () => void;
   onResume: () => void;
   onEnd: () => void;
+  onStartOver: () => void;
   ending: boolean;
 };
 
@@ -31,10 +32,21 @@ export default function RecordingView({
   onPause,
   onResume,
   onEnd,
+  onStartOver,
   ending,
 }: Props) {
   const scrollRef = useRef<HTMLDivElement>(null);
+  const [confirmStartOver, setConfirmStartOver] = useState(false);
   const paused = status === "paused";
+
+  function handleStartOver() {
+    if (!confirmStartOver) {
+      setConfirmStartOver(true);
+      return;
+    }
+    setConfirmStartOver(false);
+    onStartOver();
+  }
 
   // Keep the newest words in view as they arrive.
   useEffect(() => {
@@ -64,12 +76,31 @@ export default function RecordingView({
               Pause
             </button>
           )}
+          <button onClick={handleStartOver} className="btn btn-ghost btn-sm" disabled={ending}>
+            Start over
+          </button>
           <button onClick={onEnd} className="btn btn-primary btn-sm" disabled={ending}>
             {ending && <span className="spinner" />}
             {ending ? "Processing…" : "End recording"}
           </button>
         </div>
       </div>
+
+      {/* Confirm before discarding live audio — an accidental tap here is a much
+          worse outcome than the one extra click. */}
+      {confirmStartOver && (
+        <div className="rounded-xl border border-warn/40 bg-warn/10 px-4 py-3 mb-4 flex flex-wrap items-center justify-between gap-3">
+          <span className="text-warn text-sm">Discard this recording and start fresh?</span>
+          <div className="flex gap-2">
+            <button onClick={handleStartOver} className="btn btn-sm btn-danger">
+              Discard &amp; start over
+            </button>
+            <button onClick={() => setConfirmStartOver(false)} className="btn btn-sm btn-ghost">
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
 
       {warning && (
         <p className="badge badge-warn mb-4 !block !rounded-lg !px-3 !py-2 leading-relaxed">{warning}</p>
