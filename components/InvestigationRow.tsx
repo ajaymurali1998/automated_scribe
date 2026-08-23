@@ -1,5 +1,6 @@
 "use client";
 
+import CorrectionDiff from "@/components/CorrectionDiff";
 import { INVESTIGATION_TYPES, type Investigation } from "@/types/prescription";
 
 type Props = {
@@ -27,7 +28,19 @@ export default function InvestigationRow({ index, investigation, onChange, onRem
       }`}
     >
       <div className="flex items-start justify-between gap-3 mb-3">
-        <span className="section-label">Item {index + 1}</span>
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="section-label">Item {index + 1}</span>
+          {flagged && (
+            <button
+              onClick={() => onChange(index, { review_flag: "" })}
+              className="badge badge-warn"
+              title="Click to mark as checked"
+            >
+              {investigation.review_flag}
+              <span aria-hidden>×</span>
+            </button>
+          )}
+        </div>
         <button
           onClick={() => onRemove(index)}
           className="text-xs text-ink-soft hover:text-danger shrink-0"
@@ -37,19 +50,7 @@ export default function InvestigationRow({ index, investigation, onChange, onRem
         </button>
       </div>
 
-      {flagged && (
-        <div className="mb-3 rounded-lg border border-warn/40 bg-warn/10 px-3 py-2.5">
-          <p className="text-warn text-[13px] leading-relaxed">
-            <strong className="font-semibold">Needs your check:</strong> {investigation.review_flag}
-          </p>
-          <button
-            onClick={() => onChange(index, { review_flag: "" })}
-            className="text-xs text-warn/80 hover:text-warn underline mt-1.5"
-          >
-            I&apos;ve checked this
-          </button>
-        </div>
-      )}
+      <CorrectionDiff heardAs={investigation.heard_as} correctedTo={investigation.name} />
 
       <div className="grid grid-cols-2 gap-3">
         <div>
